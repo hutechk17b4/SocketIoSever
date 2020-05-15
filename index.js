@@ -19,7 +19,7 @@ console.log("Sever running");
 		user:'root',
 		password:'',
 		database:'film_booking',
-		port:3306
+		port:3307
 	});
 
 	//=============================
@@ -45,14 +45,18 @@ io.sockets.on('connection',function(socket){
 //===================IDPHIM và TÊN PHIM
 	socket.on('client-send-data',function(data){
 		socket.on('client-send-data-title',function(data2){
-				console.log("Sever nhan: "+data+" "+data2);
-					var sql="INSERT INTO phim(`IDphim`,`TenPhim`) SELECT * FROM(SELECT ?,?) as tmp WHERE NOT EXISTS(SELECT `IDphim`,`TenPhim` FROM phim WHERE IDphim = '?')LIMIT 1;";
-					var values= [data,data2];
+			socket.on('client-send-data-rate',function(data4){
+					console.log("Sever nhan: "+data+" "+data2);
+					var sql="INSERT INTO phim(`IDphim`,`TenPhim`,`Rate`) SELECT * FROM(SELECT ?,?,?) as tmp WHERE NOT EXISTS(SELECT `IDphim`,`TenPhim`,`Rate` FROM phim WHERE IDphim = '?')LIMIT 1;";
+					var values= [data,data2,data4];
 					sql=connection.format(sql,values);
 					connection.query(sql,function(err,rows,fields){
-					if(err) console.log("Sever da add: "+data+" "+data2);
+					if(err) console.log("Sever da add: "+data+" "+data2+" "+data4);
 			//console.log('the solution is: ',rows);
 				});
+
+			})
+			
 
 		});
 			
@@ -69,6 +73,12 @@ io.sockets.on('connection',function(socket){
 	});
 	//====================================================================================
 
+			// connection.query('drop trigger if exists trg_mytable_max10;create trigger trg_mytable_max10 before insert on theloaiphim for each row begin declare cnt int; set cnt = (select count(*) from theloaiphim where ID = new.ID); if cnt = 10 then DELETE FROM theloaiphim; end if; end;',function(err,rows,fields){
+			// if(err) throw err;
+			// console.log('the solution is: ',rows);
+	
+
+
 	socket.on('client-send-data',function(data){
 		socket.on('client-send-genreid',function(data3){
 			var sql="INSERT INTO theloaiphim(ID,IDTheLoai,IDphim) VALUES(null,?,?);";
@@ -79,7 +89,13 @@ io.sockets.on('connection',function(socket){
 			});
 		});
 	});
+
+
+	//====================================================
+
+
 //====================================== data=IDphim,data2=TenPhim,data3=IDTheLoai
+
 	
 });
 
